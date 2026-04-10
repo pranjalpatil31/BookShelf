@@ -4,9 +4,9 @@ import {
   createHttpLink,
   from,
 } from "@apollo/client";
+
 import { setContext } from "@apollo/client/link/context";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { RestLink } from "apollo-link-rest";
 
 const authMiddleware = setContext(async (_, { headers }) => {
   try {
@@ -24,17 +24,13 @@ const authMiddleware = setContext(async (_, { headers }) => {
   }
 });
 
-
-const restLink = new RestLink({ uri: import.meta.env.VITE_GOOGLE_BOOKS_API_URL });
-
-
-const graphQLLink  = createHttpLink({
+// ✅ GraphQL ONLY (Apollo best practice)
+const httpLink = createHttpLink({
   uri: import.meta.env.VITE_GRAPHQL_ENDPOINT,
 });
 
-export const link = authMiddleware.concat(graphQLLink);
-
+// Combine auth + graphql
 export const client = new ApolloClient({
+  link: from([authMiddleware.concat(httpLink)]),
   cache: new InMemoryCache(),
-  link: from([restLink, link]),
 });
