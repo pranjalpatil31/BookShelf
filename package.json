@@ -1,0 +1,51 @@
+{
+  "name": "bookshelf",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "codegen": "env-cmd -f ./.env graphql-codegen",
+    "codegen:watch": "yarn codegen -w"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.14.1",
+    "@aws-amplify/ui-react": "^6.15.3",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/lab": "^9.0.0-beta.2",
+    "@mui/material": "^9.0.0",
+    "apollo-link-rest": "^0.10.0-rc.2",
+    "aws-amplify": "^6.16.3",
+    "graphql": "^16.13.2",
+    "graphql-ws": "^6.0.8",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.14.0",
+    "use-debounce": "^10.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@graphql-codegen/cli": "^6.2.1",
+    "@graphql-codegen/client-preset": "^5.2.4",
+    "@graphql-codegen/typescript-react-apollo": "^4.4.1",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "dotenv": "^17.4.1",
+    "env-cmd": "^11.0.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.4"
+  }
+}
