@@ -11,11 +11,18 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { ApolloProvider } from "@apollo/client/react";
 import { client } from "./api/graphql/make-apollo-client.ts";
 
+const userPoolId = import.meta.env.VITE_USER_POOL_ID;
+const userPoolClientId = import.meta.env.VITE_USER_POOL_APP_CLIENT_ID;
+
+if (!userPoolId || !userPoolClientId) {
+  throw new Error("Missing Cognito environment variables");
+}
+
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: import.meta.env.VITE_USER_POOL_ID,
-      userPoolClientId: import.meta.env.VITE_USER_POOL_APP_CLIENT_ID,
+      userPoolId,
+      userPoolClientId,
     },
   },
 });
