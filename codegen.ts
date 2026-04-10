@@ -22,15 +22,9 @@ export default {
     "./src/api/graphql/generated.ts": {
       config: {
         withHooks: true,
-
-        // 🔥 THIS IS THE FIX
         reactApolloVersion: 3,
-
         useTypeImports: true,
         dedupeOperationSuffix: true,
-
-        importOperationTypesFrom: "Types",
-
         scalars: {
           AWSDateTime: "Date",
         },
