@@ -1,73 +1,186 @@
-# React + TypeScript + Vite
+# 📚 Cloud-Native Bookshelf Application  
+*Search. Organize. Track. — Powered by the Cloud.*
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack cloud-native web application demonstrating real-world implementation of five core cloud service models — **IaaS, PaaS, DBaaS, Storage-as-a-Service, and SECaaS**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📋 Table of Contents
+- Overview  
+- Architecture  
+- Tech Stack  
+- AWS Service Integration     
+- GraphQL Operations 
+- License  
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📖 Overview
 
-## Expanding the ESLint configuration
+Cloud-Native Bookshelf is a dynamic web application designed to help users discover, organize, and manage books in a personalized digital environment.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The application integrates external book data with cloud-based storage and authentication to provide a seamless experience.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Key Capabilities
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Secure user authentication  
+- Real-time book search using Google Books API  
+- Personalized bookshelf management  
+- Categorization based on reading progress  
+- Favorite marking system  
+- Easy book removal and updates  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🏗️ Architecture
+
+### System Architecture
+
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+┌───────────────────────────────────────────────────────────────┐
+│                    USER INTERFACE LAYER                       │
+│                  (AWS Amplify - PaaS)                         │
+│   React + Vite   │   Material UI   │   Cognito Auth           │
+└───────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌───────────────────────────────────────────────────────────────┐
+│                 APPLICATION / API LAYER                       │
+│        (AWS AppSync + CDK - IaaS + Managed Services)          │
+│     GraphQL API │ Queries │ Mutations │ Authorization         │
+└───────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌───────────────────────────────────────────────────────────────┐
+│                     DATA STORAGE LAYER                        │
+│                  (DynamoDB - DBaaS)                           │
+│           User Bookshelf Data & Metadata                      │
+└───────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌───────────────────────────────────────────────────────────────┐
+│                  EXTERNAL SERVICE LAYER                       │
+│                  (Google Books API)                           │
+│           Book Search & Metadata Retrieval                    │
+└───────────────────────────────────────────────────────────────┘
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+
+
+## 🛠️ Tech Stack
+
+Frontend -	React + Vite
+UI System	- Material UI
+Backend API -	GraphQL (AWS AppSync via CDK)
+Database -	DynamoDB
+Authentication - Amazon Cognito
+Deployment -	AWS Amplify
+Cloud Platform -	AWS
+External Data	- Google Books API
+---
+
+## ☁️ AWS Service Integration
+
+### Cloud Service Model Mapping
+
+| Service Model        | AWS Service    | Role                           |
+|----------------------|----------------|--------------------------------|
+| IaaS                 | AWS CDK        | Infrastructure provisioning    |
+| PaaS                 | AWS Amplify    | Hosting & CI/CD                |
+| DBaaS                | DynamoDB       | Data storage                   |
+| Storage-as-a-Service | Amazon S3      | Static asset hosting           |
+| SECaaS               | Amazon Cognito | Authentication & authorization |
+
+---
+
+## 🔐 Deployment & Security
+
+- Hosted on AWS Amplify with CI/CD pipeline  
+- GitHub-integrated automatic deployments  
+- Secure authentication using Amazon Cognito  
+- Role-based and token-based access control  
+
+
+---
+
+### GraphQL Operations
+
+#### Fetch Books
+```
+
+query ListBooks {
+listBooks {
+id
+title
+status
+isFavorite
+}
+}
+
+```
+
+#### Add Book
+```
+
+mutation CreateBook {
+createBook(input: {
+title: "Book Name",
+status: "TO_READ"
+}) {
+id
+}
+}
+
+```
+
+#### Update Book Status
+```
+
+mutation UpdateBook {
+updateBook(input: {
+id: "book-id",
+status: "READING"
+}) {
+status
+}
+}
+
+```
+
+#### Delete Book
+```
+
+mutation DeleteBook {
+deleteBook(input: {
+id: "book-id"
+}) {
+id
+}
+}
+
+```
+
+## 📊 Conclusion
+
+This project demonstrates the successful design and deployment of a **cloud-based web application on a public cloud platform**.
+
+It integrates:
+
+- IaaS (Infrastructure provisioning)  
+- PaaS (Application hosting)  
+- DBaaS (Managed database)  
+- Storage as a Service  
+- Security as a Service  
+
+The application showcases scalability, security, and modern cloud architecture principles, fulfilling the requirements of a Cloud Computing Mini Project.
+
+---
+
+## 📄 License
+
+This project is intended for academic and educational use.
+```
+
+---
+
