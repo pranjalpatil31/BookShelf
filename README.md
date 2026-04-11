@@ -71,13 +71,21 @@ The application integrates external book data with cloud-based storage and authe
 ## 🛠️ Tech Stack
 
 Frontend -	React + Vite
+
 UI System	- Material UI
+
 Backend API -	GraphQL (AWS AppSync via CDK)
+
 Database -	DynamoDB
+
 Authentication - Amazon Cognito
+
 Deployment -	AWS Amplify
+
 Cloud Platform -	AWS
+
 External Data	- Google Books API
+
 ---
 
 ## ☁️ AWS Service Integration
@@ -180,7 +188,4 @@ The application showcases scalability, security, and modern cloud architecture p
 ## 📄 License
 
 This project is intended for academic and educational use.
-```
-
----
 
