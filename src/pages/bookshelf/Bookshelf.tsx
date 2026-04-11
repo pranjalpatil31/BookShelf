@@ -45,18 +45,6 @@ const Bookshelf = () => {
       {/* Header */}
       <Stack direction="row" justifyContent="space-between">
         <PageTitle title="My Bookshelf" />
-
-        <LoadingButton
-          variant="contained"
-          size="small"
-          color="primary"
-          disabled={!canFetchMoreBooks}
-          loading={fetchingMore}
-          sx={{ my: 1 }}
-          onClick={fetchMoreBooks}
-        >
-          Load more
-        </LoadingButton>
       </Stack>
 
       {/* Tabs Section */}
