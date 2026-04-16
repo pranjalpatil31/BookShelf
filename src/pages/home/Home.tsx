@@ -13,31 +13,45 @@ import { searchGoogleBooks } from "../../api/graphql/queries/search-books"; // â
 
 const Home = () => {
   const [search, setSearch] = useState("javascript");
-  const [debouncedValue] = useDebounce(search, 500);
+  const [debouncedValue] = useDebounce(search, 1000);
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [totalItems, setTotalItems] = useState(0);
 
   const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchBooks = async (startIndex = 0, append = false) => {
     try {
       if (startIndex === 0) setLoading(true);
       else setFetchingMore(true);
-
+  
+      setError(""); // clear previous error
+  
       const data = await searchGoogleBooks(
         debouncedValue,
         import.meta.env.VITE_GOOGLE_API_KEY,
         startIndex
       );
-
+  
       const newBooks = data.items || [];
-
+  
       setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
       setTotalItems(data.totalItems || 0);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Search failed:", err);
+  
+      if (err.response?.status === 503) {
+        setError("Server is busy. Retrying...");
+  
+        // retry after 2 seconds
+        setTimeout(() => {
+          fetchBooks(startIndex, append);
+        }, 2000);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
       setFetchingMore(false);
@@ -46,10 +60,10 @@ const Home = () => {
 
   // ðŸ” search trigger
   useEffect(() => {
-    if (debouncedValue) {
-      fetchBooks(0, false);
-    }
-  }, [debouncedValue]);
+  if (debouncedValue.trim()) {
+    fetchBooks(0, false);
+  }
+}, [debouncedValue]);
 
   const handleSearch = (e: any) => {
     setSearch(e.target.value);
