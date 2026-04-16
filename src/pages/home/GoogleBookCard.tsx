@@ -19,24 +19,47 @@ interface GoogleBookCardProps {
 export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
   const { id, volumeInfo: book } = googleBook;
 
-  const [addToBookshelf, { loading }] = useMutation(CreateBookDocument, {
-    variables: {
-      input: {
-        title: book.title,
-        authors: book.authors,
-        description: book.description,
-        publisher: book.publisher,
-        publishedDate: book.publishedDate,
-        status: BookStatus.Unread,
-        imageLinks: {
-          smallThumbnail: book.imageLinks?.smallThumbnail,
-          thumbnail: book.imageLinks?.thumbnail,
+  const [addToBookshelf, { loading }] = useMutation(CreateBookDocument);
+
+  const handleAdd = () => {
+    addToBookshelf({
+      variables: {
+        input: {
+          title: book.title || "No Title",
+          authors: book.authors || [],
+          description: book.description || "No description",
+          publisher: book.publisher || "Unknown",
+          publishedDate: book.publishedDate || "N/A",
+          status: BookStatus.Unread,
+          imageLinks: {
+            smallThumbnail: book.imageLinks?.smallThumbnail || "",
+            thumbnail: book.imageLinks?.thumbnail || "",
+          },
+          previewLink: book.previewLink || "",
+          infoLink: book.infoLink || "",
         },
-        previewLink: book.previewLink,
-        infoLink: book.infoLink,
       },
-    },
-  });
+    });
+  };
+
+  // const [addToBookshelf, { loading }] = useMutation(CreateBookDocument, {
+  //   variables: {
+  //     input: {
+  //       title: book.title,
+  //       authors: book.authors,
+  //       description: book.description,
+  //       publisher: book.publisher,
+  //       publishedDate: book.publishedDate,
+  //       status: BookStatus.Unread,
+  //       imageLinks: {
+  //         smallThumbnail: book.imageLinks?.smallThumbnail,
+  //         thumbnail: book.imageLinks?.thumbnail,
+  //       },
+  //       previewLink: book.previewLink,
+  //       infoLink: book.infoLink,
+  //     },
+  //   },
+  // });
 
   return (
     <BookCard
@@ -58,7 +81,8 @@ export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
         <LoadingButton
           fullWidth
           startIcon={<BookmarkAdd />}
-          onClick={() => addToBookshelf()}
+          {/* onClick={() => addToBookshelf()} */}
+          onClick={handleAdd}
           sx={{ alignSelf: "end" }}
           loading={loading}
           loadingIndicator="Adding..."
