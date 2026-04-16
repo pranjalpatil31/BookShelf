@@ -81,7 +81,6 @@ export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
         <LoadingButton
           fullWidth
           startIcon={<BookmarkAdd />}
-          {/* onClick={() => addToBookshelf()} */}
           onClick={handleAdd}
           sx={{ alignSelf: "end" }}
           loading={loading}
