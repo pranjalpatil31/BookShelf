@@ -22,94 +22,50 @@ const Home = () => {
   const [fetchingMore, setFetchingMore] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchBooks = async (
-  startIndex = 0,
-  append = false,
-  retries = 2
-) => {
-  try {
-    if (startIndex === 0) setLoading(true);
-    else setFetchingMore(true);
 
-    setError("");
-
-    const data = await searchGoogleBooks(
-      debouncedValue,
-      startIndex
-    );
-
-    const newBooks = data.items || [];
-
-    setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
-    setTotalItems(data.totalItems || 0);
-  } catch (err: any) {
-  console.error("Search failed:", err);
-
-  if (err.status === 503 && retries > 0)
-    setError(`Retrying... (${retries})`);
-
-    await new Promise((res) => setTimeout(res, 1500));
-    return fetchBooks(startIndex, append, retries - 1);
-  } else {
-    setError("Server busy. Try again later.");
-  }
-} finally {
-    setLoading(false);
-    setFetchingMore(false);
-  }
-};
-
-  // const fetchBooks = async (startIndex = 0, append = false) => {
-  //   try {
-  //     if (startIndex === 0) setLoading(true);
-  //     else setFetchingMore(true);
+  const fetchBooks = async (startIndex = 0, append = false) => {
+    try {
+      if (startIndex === 0) setLoading(true);
+      else setFetchingMore(true);
   
-  //     setError(""); // clear previous error
+      setError(""); // clear previous error
   
-  //     const data = await searchGoogleBooks(
-  //       debouncedValue,
-  //       import.meta.env.VITE_GOOGLE_API_KEY,
-  //       startIndex
-  //     );
+      const data = await searchGoogleBooks(
+        debouncedValue,
+        import.meta.env.VITE_GOOGLE_API_KEY,
+        startIndex
+      );
   
-  //     const newBooks = data.items || [];
+      const newBooks = data.items || [];
   
-  //     setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
-  //     setTotalItems(data.totalItems || 0);
-  //   } catch (err: any) {
-  //     console.error("Search failed:", err);
+      setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
+      setTotalItems(data.totalItems || 0);
+    } catch (err: any) {
+      console.error("Search failed:", err);
   
-  //     if (err.response?.status === 503) {
-  //       setError("Server is busy. Retrying...");
+      if (err.response?.status === 503) {
+        setError("Server is busy. Retrying...");
   
-  //       // retry after 2 seconds
-  //       setTimeout(() => {
-  //         fetchBooks(startIndex, append);
-  //       }, 2000);
-  //     } else {
-  //       setError("Something went wrong. Please try again.");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //     setFetchingMore(false);
-  //   }
-  // };
+        // retry after 2 seconds
+        setTimeout(() => {
+          fetchBooks(startIndex, append);
+        }, 2000);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+      setFetchingMore(false);
+    }
+  };
 
   // 🔁 search trigger
-//   useEffect(() => {
-//   if (debouncedValue.trim()) {
-//     fetchBooks(0, false);
-//   }
-// }, [debouncedValue]);
   useEffect(() => {
-  if (!debouncedValue.trim()) return;
-
-  const timer = setTimeout(() => {
+  if (debouncedValue.trim()) {
     fetchBooks(0, false);
-  }, 300);
-
-  return () => clearTimeout(timer);
+  }
 }, [debouncedValue]);
+
 
   const handleSearch = (e: any) => {
     setSearch(e.target.value);
