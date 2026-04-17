@@ -35,7 +35,6 @@ const Home = () => {
 
     const data = await searchGoogleBooks(
       debouncedValue,
-      import.meta.env.VITE_GOOGLE_API_KEY,
       startIndex
     );
 
@@ -46,7 +45,7 @@ const Home = () => {
   } catch (err: any) {
   console.error("Search failed:", err);
 
-  if (err.response?.status === 503 && retries > 0) {
+  if (err.status === 503 && retries > 0)
     setError(`Retrying... (${retries})`);
 
     await new Promise((res) => setTimeout(res, 1500));
