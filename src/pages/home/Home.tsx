@@ -118,7 +118,7 @@ const Home = () => {
           color="primary"
           loading={fetchingMore}
           loadingIndicator="loading..."
-          disabled={books.length >= totalItems || fetchingMore}
+          disabled={books.length >= totalItems}
           onClick={handleFetchMore}
         >
           Load more
