@@ -41,17 +41,16 @@ const Home = () => {
       setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
       setTotalItems(data.totalItems || 0);
     } catch (err: any) {
-      if (import.meta.env.DEV) {
-        console.error("Search failed:", err);
-      }
+      
+      console.error("Search failed:", err);
   
       if (err.response?.status === 503) {
         setError("Server is busy. Retrying...");
   
         // retry after 2 seconds
-        // setTimeout(() => {
-        //   fetchBooks(startIndex, append);
-        // }, 2000);
+        setTimeout(() => {
+          fetchBooks(startIndex, append);
+        }, 2000);
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -62,21 +61,11 @@ const Home = () => {
   };
 
   // 🔁 search trigger
-//   useEffect(() => {
-//   if (debouncedValue.trim()) {
-//     fetchBooks(0, false);
-//   }
-// }, [debouncedValue]);
   useEffect(() => {
-  if (!debouncedValue.trim()) return;
-
-  const timer = setTimeout(() => {
+  if (debouncedValue.trim()) {
     fetchBooks(0, false);
-  }, 300);
-
-  return () => clearTimeout(timer);
+  }
 }, [debouncedValue]);
-
 
   const handleSearch = (e: any) => {
     setSearch(e.target.value);
