@@ -13,6 +13,7 @@ export const searchGoogleBooks = async (
       key: apiKey,
       startIndex,
     },
+    signal, // ✅ ADD THIS
   });
 
   return response.data;
