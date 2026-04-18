@@ -24,6 +24,8 @@ const Home = () => {
 
   // ✅ NEW: Abort controller to cancel previous requests
   const controllerRef = useRef<AbortController | null>(null);
+  const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
   const fetchBooks = async (startIndex = 0, append = false) => {
     try {
@@ -38,6 +40,11 @@ const Home = () => {
       else setFetchingMore(true);
 
       setError("");
+      
+      // ✅ prevent API rate limit for pagination
+      if (startIndex !== 0) {
+        await delay(800);
+      }
 
       const data = await searchGoogleBooks(
         debouncedValue,
@@ -82,6 +89,8 @@ const Home = () => {
   };
 
   const handleFetchMore = async () => {
+    if (fetchingMore) return; // 🚫 stop multiple clicks
+  
     await fetchBooks(books.length, true);
   };
 
