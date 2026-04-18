@@ -42,6 +42,25 @@ export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
     });
   };
 
+  // const [addToBookshelf, { loading }] = useMutation(CreateBookDocument, {
+  //   variables: {
+  //     input: {
+  //       title: book.title,
+  //       authors: book.authors,
+  //       description: book.description,
+  //       publisher: book.publisher,
+  //       publishedDate: book.publishedDate,
+  //       status: BookStatus.Unread,
+  //       imageLinks: {
+  //         smallThumbnail: book.imageLinks?.smallThumbnail,
+  //         thumbnail: book.imageLinks?.thumbnail,
+  //       },
+  //       previewLink: book.previewLink,
+  //       infoLink: book.infoLink,
+  //     },
+  //   },
+  // });
+
   return (
     <BookCard
       book={{ id: id, ...book } as any}
