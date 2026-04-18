@@ -19,24 +19,28 @@ interface GoogleBookCardProps {
 export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
   const { id, volumeInfo: book } = googleBook;
 
-  const [addToBookshelf, { loading }] = useMutation(CreateBookDocument, {
-    variables: {
-      input: {
-        title: book.title,
-        authors: book.authors,
-        description: book.description,
-        publisher: book.publisher,
-        publishedDate: book.publishedDate,
-        status: BookStatus.Unread,
-        imageLinks: {
-          smallThumbnail: book.imageLinks?.smallThumbnail,
-          thumbnail: book.imageLinks?.thumbnail,
+  const [addToBookshelf, { loading }] = useMutation(CreateBookDocument);
+
+  const handleAdd = () => {
+    addToBookshelf({
+      variables: {
+        input: {
+          title: book.title || "No Title",
+          authors: book.authors || [],
+          description: book.description || "No description",
+          publisher: book.publisher || "Unknown",
+          publishedDate: book.publishedDate || "N/A",
+          status: BookStatus.Unread,
+          imageLinks: {
+            smallThumbnail: book.imageLinks?.smallThumbnail || "",
+            thumbnail: book.imageLinks?.thumbnail || "",
+          },
+          previewLink: book.previewLink || "",
+          infoLink: book.infoLink || "",
         },
-        previewLink: book.previewLink,
-        infoLink: book.infoLink,
       },
-    },
-  });
+    });
+  };
 
   return (
     <BookCard
@@ -58,7 +62,7 @@ export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
         <LoadingButton
           fullWidth
           startIcon={<BookmarkAdd />}
-          onClick={() => addToBookshelf()}
+          onClick={handleAdd}
           sx={{ alignSelf: "end" }}
           loading={loading}
           loadingIndicator="Adding..."
@@ -70,79 +74,3 @@ export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
     />
   );
 };
-// import { Stack, Typography } from "@mui/material";
-// import { useMutation } from "@apollo/client/react";
-// import { CreateBookDocument } from "../../api/graphql/generated";
-// import BookCard from "../../components/common/BookCard";
-// import { CardTitle } from "../../components/common/CardTitle";
-// import { LoadingButton } from "@mui/lab";
-// import { BookmarkAdd } from "@mui/icons-material";
-// import type {
-//   GoogleBook,
-// } from "../../api/graphql/generated";
-// import {
-//   BookStatus,
-// } from "../../api/graphql/generated";
-
-// interface GoogleBookCardProps {
-//   googleBook: GoogleBook;
-// }
-
-// export const GoogleBookCard = ({ googleBook }: GoogleBookCardProps) => {
-//   const { id, volumeInfo: book } = googleBook;
-
-//   const [addToBookshelf, { loading }] = useMutation(CreateBookDocument);
-
-//   const handleAdd = () => {
-//     addToBookshelf({
-//       variables: {
-//         input: {
-//           title: book.title || "No Title",
-//           authors: book.authors || [],
-//           description: book.description || "No description",
-//           publisher: book.publisher || "Unknown",
-//           publishedDate: book.publishedDate || "N/A",
-//           status: BookStatus.Unread,
-//           imageLinks: {
-//             smallThumbnail: book.imageLinks?.smallThumbnail || "",
-//             thumbnail: book.imageLinks?.thumbnail || "",
-//           },
-//           previewLink: book.previewLink || "",
-//           infoLink: book.infoLink || "",
-//         },
-//       },
-//     });
-//   };
-
-//   return (
-//     <BookCard
-//       book={{ id: id, ...book } as any}
-//       imgHeight={300}
-//       cardContent={
-//         <Stack>
-//           <CardTitle variant="h6">{book.title}</CardTitle>
-//           {book.authors?.length ? (
-//             <Typography variant="body2">{book.authors[0]}</Typography>
-//           ) : (
-//             "-"
-//           )}
-//           <Typography variant="body2">{book.publisher || "-"}</Typography>
-//           <Typography variant="body2">{book.publishedDate || "-"}</Typography>
-//         </Stack>
-//       }
-//       cardActions={
-//         <LoadingButton
-//           fullWidth
-//           startIcon={<BookmarkAdd />}
-//           onClick={handleAdd}
-//           sx={{ alignSelf: "end" }}
-//           loading={loading}
-//           loadingIndicator="Adding..."
-//           variant="contained"
-//         >
-//           Add to bookshelf
-//         </LoadingButton>
-//       }
-//     />
-//   );
-// };
