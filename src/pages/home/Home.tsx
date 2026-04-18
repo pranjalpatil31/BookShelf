@@ -13,7 +13,7 @@ import { searchGoogleBooks } from "../../api/graphql/queries/search-books"; // â
 
 const Home = () => {
   const [search, setSearch] = useState("javascript");
-  const [debouncedValue] = useDebounce(search, 1000);
+  const [debouncedValue] = useDebounce(search, 1500);
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -22,13 +22,13 @@ const Home = () => {
   const [fetchingMore, setFetchingMore] = useState(false);
   const [error, setError] = useState("");
 
-
-  const fetchBooks = async (startIndex = 0, append = false) => {
+  const fetchBooks = async (startIndex = 0, append = false, retryCount = 0) => {
+    if (loading || fetchingMore) return;
     try {
       if (startIndex === 0) setLoading(true);
       else setFetchingMore(true);
   
-      setError(""); // clear previous error
+      setError("");
   
       const data = await searchGoogleBooks(
         debouncedValue,
@@ -41,24 +41,59 @@ const Home = () => {
       setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
       setTotalItems(data.totalItems || 0);
     } catch (err: any) {
-      
       console.error("Search failed:", err);
   
-      if (err.response?.status === 503) {
-        setError("Server is busy. Retrying...");
+      if (err.response?.status === 503 && retryCount < 3) {
+        setError(`Retrying... (${retryCount + 1}/3)`);
   
-        // retry after 2 seconds
         setTimeout(() => {
-          fetchBooks(startIndex, append);
+          fetchBooks(startIndex, append, retryCount + 1);
         }, 2000);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError("Server busy or failed. Try again later.");
       }
     } finally {
       setLoading(false);
       setFetchingMore(false);
     }
   };
+
+  // const fetchBooks = async (startIndex = 0, append = false) => {
+  //   try {
+  //     if (startIndex === 0) setLoading(true);
+  //     else setFetchingMore(true);
+  
+  //     setError(""); // clear previous error
+  
+  //     const data = await searchGoogleBooks(
+  //       debouncedValue,
+  //       import.meta.env.VITE_GOOGLE_API_KEY,
+  //       startIndex
+  //     );
+  
+  //     const newBooks = data.items || [];
+  
+  //     setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
+  //     setTotalItems(data.totalItems || 0);
+  //   } catch (err: any) {
+      
+  //     console.error("Search failed:", err);
+  
+  //     if (err.response?.status === 503) {
+  //       setError("Server is busy. Retrying...");
+  
+  //       // retry after 2 seconds
+  //       setTimeout(() => {
+  //         fetchBooks(startIndex, append);
+  //       }, 2000);
+  //     } else {
+  //       setError("Something went wrong. Please try again.");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //     setFetchingMore(false);
+  //   }
+  // };
 
   // ðŸ” search trigger
   useEffect(() => {
@@ -71,9 +106,15 @@ const Home = () => {
     setSearch(e.target.value);
   };
 
-  const handleFetchMore = async () => {
-    await fetchBooks(books.length, true);
+  const handleFetchMore = () => {
+    if (!fetchingMore && books.length < totalItems) {
+      fetchBooks(books.length, true);
+    }
   };
+
+  // const handleFetchMore = async () => {
+  //   await fetchBooks(books.length, true);
+  // };
 
   return (
     <>
