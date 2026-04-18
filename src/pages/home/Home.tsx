@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { GoogleBook } from "../../api/graphql/generated";
 import PageTitle from "../../components/common/PageTitle";
 import { SearchBar } from "./Home.style";
@@ -9,11 +9,11 @@ import Box from "@mui/material/Box";
 import { GoogleBookCard } from "./GoogleBookCard";
 import GoogleBookListSkeleton from "./GoogleBookListSkeleton";
 import { LoadingButton } from "@mui/lab";
-import { searchGoogleBooks } from "../../api/graphql/queries/search-books"; // ✅ NEW
+import { searchGoogleBooks } from "../../api/graphql/queries/search-books";
 
 const Home = () => {
   const [search, setSearch] = useState("javascript");
-  const [debouncedValue] = useDebounce(search, 1000);
+  const [debouncedValue] = useDebounce(search, 500); // ⬅️ reduced delay
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -22,35 +22,45 @@ const Home = () => {
   const [fetchingMore, setFetchingMore] = useState(false);
   const [error, setError] = useState("");
 
+  // ✅ NEW: Abort controller to cancel previous requests
+  const controllerRef = useRef<AbortController | null>(null);
 
   const fetchBooks = async (startIndex = 0, append = false) => {
     try {
+      // ✅ cancel previous request
+      if (controllerRef.current) {
+        controllerRef.current.abort();
+      }
+
+      controllerRef.current = new AbortController();
+
       if (startIndex === 0) setLoading(true);
       else setFetchingMore(true);
-  
-      setError(""); // clear previous error
-  
+
+      setError("");
+
       const data = await searchGoogleBooks(
         debouncedValue,
         import.meta.env.VITE_GOOGLE_API_KEY,
-        startIndex
+        startIndex,
+        controllerRef.current.signal // ⬅️ pass signal
       );
-  
+
       const newBooks = data.items || [];
-  
+
       setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
       setTotalItems(data.totalItems || 0);
     } catch (err: any) {
-      
+      // ✅ Ignore aborted requests (important)
+      if (err.name === "CanceledError" || err.name === "AbortError") {
+        return;
+      }
+
       console.error("Search failed:", err);
-  
+
+      // ✅ FIX: remove retry loop
       if (err.response?.status === 503) {
-        setError("Server is busy. Retrying...");
-  
-        // retry after 2 seconds
-        setTimeout(() => {
-          fetchBooks(startIndex, append);
-        }, 2000);
+        setError("Server is busy. Please try again.");
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -62,10 +72,10 @@ const Home = () => {
 
   // 🔁 search trigger
   useEffect(() => {
-  if (debouncedValue.trim()) {
-    fetchBooks(0, false);
-  }
-}, [debouncedValue]);
+    if (debouncedValue.trim()) {
+      fetchBooks(0, false);
+    }
+  }, [debouncedValue]);
 
   const handleSearch = (e: any) => {
     setSearch(e.target.value);
@@ -89,6 +99,13 @@ const Home = () => {
       />
 
       <Divider sx={{ my: 2 }} />
+
+      {/* ✅ OPTIONAL: show error message */}
+      {error && (
+        <Box sx={{ color: "red", textAlign: "center", mb: 2 }}>
+          {error}
+        </Box>
+      )}
 
       {loading ? (
         <GoogleBookListSkeleton />
@@ -129,85 +146,81 @@ const Home = () => {
 };
 
 export default Home;
-// import { useQuery } from "@apollo/client/react";
-// import { SearchGoogleBooksDocument } from "../../api/graphql/generated";
-// import { useState } from "react";
-// import { useMemo } from "react";
-// import type {
-//   GoogleBook,
-//   SearchGoogleBooksQuery,
-//   SearchGoogleBooksQueryVariables,
-// } from "../../api/graphql/generated";
+// import { useState, useMemo, useEffect } from "react";
+// import type { GoogleBook } from "../../api/graphql/generated";
 // import PageTitle from "../../components/common/PageTitle";
 // import { SearchBar } from "./Home.style";
 // import { Search as SearchIcon } from "@mui/icons-material";
 // import { useDebounce } from "use-debounce";
-// import {
-//   // Box, 
-//   Divider
-// } from "@mui/material";
+// import { Divider } from "@mui/material";
 // import Box from "@mui/material/Box";
 // import { GoogleBookCard } from "./GoogleBookCard";
 // import GoogleBookListSkeleton from "./GoogleBookListSkeleton";
 // import { LoadingButton } from "@mui/lab";
+// import { searchGoogleBooks } from "../../api/graphql/queries/search-books"; // ✅ NEW
 
 // const Home = () => {
 //   const [search, setSearch] = useState("javascript");
-//   const [debouncedValue] = useDebounce(search, 500);
+//   const [debouncedValue] = useDebounce(search, 1000);
+
+//   const [books, setBooks] = useState<GoogleBook[]>([]);
+//   const [totalItems, setTotalItems] = useState(0);
+
+//   const [loading, setLoading] = useState(false);
 //   const [fetchingMore, setFetchingMore] = useState(false);
+//   const [error, setError] = useState("");
 
 
+//   const fetchBooks = async (startIndex = 0, append = false) => {
+//     try {
+//       if (startIndex === 0) setLoading(true);
+//       else setFetchingMore(true);
+  
+//       setError(""); // clear previous error
+  
+//       const data = await searchGoogleBooks(
+//         debouncedValue,
+//         import.meta.env.VITE_GOOGLE_API_KEY,
+//         startIndex
+//       );
+  
+//       const newBooks = data.items || [];
+  
+//       setBooks((prev) => (append ? [...prev, ...newBooks] : newBooks));
+//       setTotalItems(data.totalItems || 0);
+//     } catch (err: any) {
+      
+//       console.error("Search failed:", err);
+  
+//       if (err.response?.status === 503) {
+//         setError("Server is busy. Retrying...");
+  
+//         // retry after 2 seconds
+//         setTimeout(() => {
+//           fetchBooks(startIndex, append);
+//         }, 2000);
+//       } else {
+//         setError("Something went wrong. Please try again.");
+//       }
+//     } finally {
+//       setLoading(false);
+//       setFetchingMore(false);
+//     }
+//   };
 
-//   const { data, loading, fetchMore } = useQuery<
-//     SearchGoogleBooksQuery,
-//     SearchGoogleBooksQueryVariables
-//   >(SearchGoogleBooksDocument, {
-//     variables: {
-//       query: debouncedValue,
-//       apiKey: import.meta.env.VITE_GOOGLE_API_KEY,
-//       startIndex: 0,
-//     },
-//   });
-
-
-//   console.log(data, loading);
+//   // 🔁 search trigger
+//   useEffect(() => {
+//   if (debouncedValue.trim()) {
+//     fetchBooks(0, false);
+//   }
+// }, [debouncedValue]);
 
 //   const handleSearch = (e: any) => {
 //     setSearch(e.target.value);
 //   };
 
-//   const books = useMemo(
-//     () => (data?.searchGoogleBooks.items as GoogleBook[]) || [],
-//     [data]
-//   );
-
 //   const handleFetchMore = async () => {
-//     setFetchingMore(true);
-//     await fetchMore({
-//       variables: {
-//         query: debouncedValue,
-//         apiKey: import.meta.env.VITE_GOOGLE_API_KEY,
-//         startIndex: books.length,
-//       },
-//       updateQuery(previousResult, { fetchMoreResult }) {
-//         if (!fetchMoreResult) {
-//           return previousResult;
-//         }
-
-//         const previousBooks = previousResult?.searchGoogleBooks?.items || [];
-//         const moreBooks = fetchMoreResult?.searchGoogleBooks?.items || [];
-
-//         if (fetchMoreResult.searchGoogleBooks) {
-//           fetchMoreResult.searchGoogleBooks.items = [
-//             ...previousBooks,
-//             ...moreBooks,
-//           ];
-//         }
-
-//         setFetchingMore(false);
-//         return { ...fetchMoreResult };
-//       },
-//     });
+//     await fetchBooks(books.length, true);
 //   };
 
 //   return (
@@ -240,6 +253,7 @@ export default Home;
 //           ))}
 //         </Box>
 //       )}
+
 //       <Box
 //         sx={{
 //           p: 3,
@@ -252,7 +266,7 @@ export default Home;
 //           color="primary"
 //           loading={fetchingMore}
 //           loadingIndicator="loading..."
-//           disabled={books.length === data?.searchGoogleBooks?.totalItems}
+//           disabled={books.length >= totalItems}
 //           onClick={handleFetchMore}
 //         >
 //           Load more
@@ -263,6 +277,3 @@ export default Home;
 // };
 
 // export default Home;
-
-
-
