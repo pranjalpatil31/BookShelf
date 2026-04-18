@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { GoogleBook } from "../../api/graphql/generated";
 import PageTitle from "../../components/common/PageTitle";
 import { SearchBar } from "./Home.style";
@@ -13,7 +13,7 @@ import { searchGoogleBooks } from "../../api/graphql/queries/search-books"; // �
 
 const Home = () => {
   const [search, setSearch] = useState("javascript");
-  const [debouncedValue] = useDebounce(search, 1500);
+  const [debouncedValue] = useDebounce(search, 2000);
 
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -21,9 +21,17 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
   const [error, setError] = useState("");
+  const isFetchingRef = useRef(false);
 
-  const fetchBooks = async (startIndex = 0, append = false, retryCount = 0) => {
-    if (loading || fetchingMore) return;
+  const fetchBooks = async (
+    startIndex = 0,
+    append = false,
+    retryCount = 0
+  ) => {
+    
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+  
     try {
       if (startIndex === 0) setLoading(true);
       else setFetchingMore(true);
@@ -43,16 +51,18 @@ const Home = () => {
     } catch (err: any) {
       console.error("Search failed:", err);
   
-      if (err.response?.status === 503 && retryCount < 3) {
-        setError(`Retrying... (${retryCount + 1}/3)`);
+      // ✅ limited retry only
+      if (err.response?.status === 503 && retryCount < 2) {
+        setError("Server busy... retrying");
   
         setTimeout(() => {
           fetchBooks(startIndex, append, retryCount + 1);
-        }, 2000);
+        }, 3000); // ⬅️ increase delay
       } else {
-        setError("Server busy or failed. Try again later.");
+        setError("Too many requests. Please wait and try again.");
       }
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
       setFetchingMore(false);
     }
@@ -97,10 +107,10 @@ const Home = () => {
 
   // 🔁 search trigger
   useEffect(() => {
-  if (debouncedValue.trim()) {
+    if (!debouncedValue.trim()) return;
+  
     fetchBooks(0, false);
-  }
-}, [debouncedValue]);
+  }, [debouncedValue]);
 
   const handleSearch = (e: any) => {
     setSearch(e.target.value);
